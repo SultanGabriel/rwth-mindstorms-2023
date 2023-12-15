@@ -17,7 +17,15 @@
 
 %% Calculate the summation of the two numbers
 % ... insert here your code
-
+zahl_1 = inputdlg();
+zahl_2 = inputdlg();
+a = zahl_1{1};
+b = zahl_2{1};
+c = str2num(a);
+d = str2num(b);
+ergebnis = c + d
+ergebnis_zehner = floor(ergebnis / 10)
+ergebnis_einer = mod(ergebnis, 10);
 
 
 %% Initialize figures
@@ -39,6 +47,14 @@ hold on             % hold on flag to plot more plots into the calculator face f
 % ... insert here your code
 
 
+StartPoint = [0 0]
+
+zehner_winkel = ergebnis_zehner * 0.2 * pi 
+zehnerPoint = [sin(zehner_winkel) * 0.3, cos(zehner_winkel) * 0.3]
+
+einser_winkel = ergebnis_einer * 0.2 * pi 
+einserPoint = [sin(einser_winkel) * 0.7, cos(einser_winkel) * 0.7]
+
 
 %% Plot pointers into the figure
 % Tips:
@@ -47,7 +63,8 @@ hold on             % hold on flag to plot more plots into the calculator face f
 %
 % ... insert here your code
 
-
+line([0 zehnerPoint(1)], [0 zehnerPoint(2)] , 'LineStyle', '-', 'Color', 'red', 'LineWidth', 5);
+line([0 einserPoint(1)], [0 einserPoint(2)] , 'LineStyle', '-', 'Color', 'blue', "LineWidth", 5);
 
 
 %% Mindstorms NXT - Control
@@ -57,3 +74,28 @@ hold on             % hold on flag to plot more plots into the calculator face f
 % *Program the Mindstorms machine*
 %
 % ... insert here your code
+b = EV3();
+b.connect('usb');
+b.motorA.limitMode = 'Tacho';
+b.motorB.limitMode = 'Tacho';
+
+b.motorA.resetTachoCount;
+b.motorB.resetTachoCount;
+
+b.motorA.brakeMode = 'Brake';
+b.motorB.brakeMode = 'Brake';
+
+b.motorA.power = -100;
+b.motorB.power = 100;
+
+% Motor
+b.motorA.limitValue = (zehner_winkel / pi * 180) * 45;
+b.motorB.limitValue = einser_winkel / pi * 180;
+
+if(b.motorA.limitValue ~= 0)
+    b.motorA.start();
+end
+
+if(b.motorB.limitValue ~= 0)
+    b.motorB.start();
+end

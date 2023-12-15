@@ -17,8 +17,8 @@ b.connect('usb');
 % ...
 b.motorA.power = 30;
 b.motorA.limitValue = 1000;
+%b.motorA.brakeMode = 'Coast';
 b.motorA.brakeMode = 'Brake';
-
 
 
 %% Do three measurements
@@ -36,7 +36,7 @@ for k = 1:3
        b.motorA.power = b.motorA.power +20; 
     end
     b.motorA.start();
-    while(i < 10000000000)
+    while(1)
         time = time + toc;
         messergebnisse_einzel=[messergebnisse_einzel;[b.motorA.isRunning,b.motorA.tachoCount,time]];
         i = i+1;
@@ -45,11 +45,11 @@ for k = 1:3
         end
     end
     b.motorA.stop;
-    messergebnisse_einzel
+    %messergebnisse_einzel
     size(messergebnisse_einzel)
     messergebnisse_gesamt = [messergebnisse_gesamt, messergebnisse_einzel(1:250,1:3)];
 end
-messergebnisse_gesamt
+messergebnisse_gesamt;
 
 %% Close NXT
 % ...
@@ -64,9 +64,11 @@ messergebnisse_gesamt
 xachse = messergebnisse_gesamt(:,3);
 
 hold all;
-plot(xachse,messergebnisse_gesamt(:,2),'ro');
-plot(xachse,messergebnisse_gesamt(:,5),'mo');
-plot(xachse,messergebnisse_gesamt(:,8),'co');
+plot(xachse,messergebnisse_gesamt(:,2),'r');
+plot(xachse,messergebnisse_gesamt(:,5),'m');
+plot(xachse,messergebnisse_gesamt(:,8),'c');
 plot([-1000 10000],[1000 1000],'b-');
-plot(xachse,messergebnisse_gesamt(:,1)*500,'g.');
-
+plot(xachse,messergebnisse_gesamt(:,1)*510,'r.');
+plot(xachse,messergebnisse_gesamt(:,4)*520,'m.');
+plot(xachse,messergebnisse_gesamt(:,7)*530,'c.');
+set(gca, 'YScale', 'log');
