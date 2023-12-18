@@ -6,9 +6,10 @@ function lightReadWithTimer(brickObj, numberOfSeconds)
 
 myUserData.helligkeitswerte = [];
 myUserData.zeitwerte = [];
-myUserData.brick = brickObj
+myUserData.brick = brickObj;
 myUserData.time = 0;
 myUserData.endTime = numberOfSeconds;
+myUserData.startTime = 0;
 % Timer-Objekt anlegen und starten
 % ...
 t = timer("UserData", myUserData)
@@ -21,7 +22,7 @@ t = timer("UserData", myUserData)
 t.Period = 0.05;
 t.ExecutionMode = 'fixedRate';
 t.TimerFcn =  @readLightTimerFcn;
-t.StartFcn = @startFcn;
+%t.StartFcn = @startFcn;
 
 start(t);
 tic;
@@ -42,9 +43,11 @@ function readLightTimerFcn (timerObj, event)
 %    disp("ICH WURDE AUFGERUFEN!!!")
 
     obj = timerObj.UserData  
+    %t1 = obj.startTime;
+    
     obj.helligkeitswerte(end+1) = obj.brick.sensor2.value;
 
-    obj.time = obj.time + toc;
+    obj.time = obj.time + toc
     obj.zeitwerte(end+1) = obj.time;
 
 
@@ -53,29 +56,18 @@ function readLightTimerFcn (timerObj, event)
     %t1 = datevec(datenum(obj.startTime));
     %t2 = datevec(datenum(event.time));
 
-    t1 = datevec(obj.startTime);
-    t2 = datevec(event.time);
 
-    %% FIXME stopping not working; wrong timing ...
 
-    if(etime(t2, t1)>obj.endTime)
-	timerObj.stop;
-
-        plot(obj.zeitwerte, obj.helligkeitswerte);
-
-	timerObj.delete;
-    end
-%{
     if(obj.time/100 >= obj.endTime)
-	timerObj.stop;
+        timerObj.stop;
 
         plot(obj.zeitwerte, obj.helligkeitswerte);
 
-	timerObj.delete;
+        timerObj.delete;
     end
-%}
-end
 
+end
+%{
 function startFcn(timerObj, event)
     obj = timerObj.UserData
     obj.startTime = event.time
@@ -83,3 +75,4 @@ function startFcn(timerObj, event)
     timerObj.UserData = obj
 end
 
+%}
