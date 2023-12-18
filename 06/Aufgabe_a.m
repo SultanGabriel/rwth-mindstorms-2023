@@ -6,9 +6,11 @@ function[]  = Aufgabe_a()
 brickObj = EV3();
 brickObj.connect('usb');
 a = [];
-for i = 1:100
-    a = [a,brickObj.sensor2.value] ;
-    disp(a)
+for i = 1:1000
+    b = brickObj.sensor2.value
+    a = [a,b];
+    
+    disp(b)
     pause(1);
 end
 
