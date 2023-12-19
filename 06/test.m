@@ -18,29 +18,25 @@ brickObj.motorA.speedRegulation = 0;
 brickObj.motorB.speedRegulation = 0;
 brickObj.motorC.speedRegulation = 1;
 
-global SPEED;
-SPEED = 11;
+SPEED = 50;
 
 brickObj.motorA.power = SPEED;
 brickObj.motorB.power = SPEED;
-brickObj.motorC.power = 5;
+brickObj.motorC.power = -5;
 
-StopValue = 10;
+StopValue = 5.0;
 
 %%Program
 drehUnFahr(brickObj)
 while(true)
 	disp("Still alive")
 	if(brickObj.sensor1.value <= StopValue)
+		disp("Stop, gegend untersuchen");
+
 		brickObj.motorA.syncedStop();
-        disp("Stopped, dist < stopvalue");
 		drehUnFahr(brickObj);
-    end
-    
-    if(~brickObj.motorC.isRunning)
-       brickObj.motorC.stop(); 
-    end
-        
+	end
+
 	% EMERGENCY STOP !!!
 	if(brickObj.sensor2.value)
 		disp("EMERGENCY STOP!!!");
@@ -52,27 +48,20 @@ end
 
 
 function drehUnFahr(brickObj)
-    global SPEED;
-    disp("Gegend untersuchen")
-
-	w = umgebungsMessung(brickObj)
-    
+	w = umgebungsMessung(brickObj);
 	drehung(brickObj, w);
+
 
 	disp("Weiter Fahrt")
 
 	brickObj.motorA.power = SPEED;
 	brickObj.motorB.power = SPEED;
-    
-    brickObj.motorA.limitValue = 0;
-    brickObj.motorB.limitValue = 0;
-    
+
 	brickObj.motorA.syncedStart(brickObj.motorB);
 end
 
 %% function definitions
 function w =  umgebungsMessung(brickObj)
-    disp("Umgebungs Messung Start")
     brickObj.motorC.limitValue = 360;
 
     N = 360;
@@ -95,13 +84,12 @@ function w =  umgebungsMessung(brickObj)
         WINKEL(1) = c * 3.14 / 180.0;
 
 
-        %if(360 - abs(brickObj.motorC.tachoCount) < 3  )
-        if(~brickObj.motorC.isRunning)
-            disp('Turn back and continue')
+        if(360 - abs(brickObj.motorC.tachoCount) < 1  )
+            disp('turn')
 
             polarplot(WINKEL, ABSTAND);
 
-            brickObj.motorC.power = -100;
+            brickObj.motorC.power = 100;
 
             brickObj.motorC.resetTachoCount;
 
@@ -109,12 +97,9 @@ function w =  umgebungsMessung(brickObj)
 
             brickObj.motorC.resetTachoCount;
 
-            brickObj.motorC.power = 5;
-            
-            break;
+            brickObj.motorC.power = -5;
+            break
         end
-        
-
     end
 
 
@@ -134,29 +119,24 @@ function w =  umgebungsMessung(brickObj)
 
 	if(idx2 > 0)
 		w2 = WINKEL(idx2) / pi * 180
+
 		w = floor((w1 + w2) / 2)
 	else
 		w = w1
-    end
-    
-    maxAbstand = maxAbstand
-    
-    disp("Umgebungs Messung Fertig");
+	end
 end
 
 function drehung(brickObj, angle)
-    global SPEED;
-    
 	% In Uhrzeigersinn
-    %if(angle < 180)
-		%angle = angle;
-    %    brickObj.motorA.power = SPEED;
-    %    brickObj.motorB.power = -SPEED;
-    %else 
+    if(angle < 180)
+		angle = 360 - angle;
+        brickObj.motorA.power = SPEED;
+        brickObj.motorB.power = -SPEED;
+    else 
 		% Gegen Uhrzeigersinn
-    brickObj.motorA.power = -1 * SPEED;
-    brickObj.motorB.power = SPEED;
-    %end
+        brickObj.motorA.power = -SPEED;
+        brickObj.motorB.power = SPEED;
+    end
     
     brickObj.motorA.limitValue = angle * 2;
     brickObj.motorB.limitValue = angle * 2;
@@ -170,4 +150,3 @@ function drehung(brickObj, angle)
 	end
 	disp("Hab gedreht")
 end
-            

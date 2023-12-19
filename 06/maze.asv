@@ -18,14 +18,13 @@ brickObj.motorA.speedRegulation = 0;
 brickObj.motorB.speedRegulation = 0;
 brickObj.motorC.speedRegulation = 1;
 
-global SPEED;
-SPEED = 11;
+SPEED = 1;
 
 brickObj.motorA.power = SPEED;
 brickObj.motorB.power = SPEED;
 brickObj.motorC.power = 5;
 
-StopValue = 10;
+StopValue = 8.0;
 
 %%Program
 drehUnFahr(brickObj)
