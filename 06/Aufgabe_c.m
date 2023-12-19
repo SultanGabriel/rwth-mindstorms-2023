@@ -1,6 +1,6 @@
 brickObj = EV3();
-brickObj.connect('usb');
-%brickObj.connect('bt', 'serPort', '/dev/rfcomm0')
+%brickObj.connect('usb');
+brickObj.connect('bt', 'serPort', '/dev/rfcomm0')
 
 brickObj.motorA.limitMode = 'Tacho';
 brickObj.motorB.limitMode = 'Tacho';
@@ -32,11 +32,12 @@ N = 360;
 ABSTAND = zeros(N,1, 'double');
 WINKEL = zeros(N,1, 'double');
 
-polarplot(WINKEL, ABSTAND);
+%polarplot(WINKEL, ABSTAND);
 
-linkdata on
+%linkdata on
 
 while 1
+
     abstand = brickObj.sensor1.value
    
     ABSTAND = circshift(ABSTAND, 1);
@@ -95,12 +96,13 @@ end
 maxAbstand = -1;
 idx = -1;
 idx2 = -1
+TOLERANZ = 1
 for i = 1:N
     if(maxAbstand < ABSTAND(i))
         maxAbstand = ABSTAND(i)
         idx = i;
         idx2 = -1;
-    elseif(maxAbstand == ABSTAND(i))
+    elseif(abs(maxAbstand - ABSTAND(i)) <= TOLERANZ)
         idx2 = i;
     end
         
@@ -110,7 +112,35 @@ maxAbstand
 idx
 idx2
 
-wstart = WINKEL(idx) / pi * 180
-wstop = WINKEL(idx2) / pi * 180
 
-brickObj.disconnect();
+wstart = WINKEL(idx) / pi * 180
+
+if(idx2 > 0)
+    wstop = WINKEL(idx2) / pi * 180
+
+    w = floor((wstart + wstop) / 2)
+    drehung(brickObj, w)
+else
+    drehung(brickObj, wstart)
+end
+
+
+%brickObj.disconnect();
+
+
+function drehung(brickObj, angle)
+    if(angle < 0)
+        brickObj.motorA.power = 100;
+        brickObj.motorB.power = -100;
+    else 
+        brickObj.motorA.power = -100;
+        brickObj.motorB.power = 100;
+    end
+    
+    brickObj.motorA.limitValue = angle * 2;
+    brickObj.motorB.limitValue = angle * 2;
+    
+    brickObj.motorA.start();
+    brickObj.motorB.start();
+    
+end
