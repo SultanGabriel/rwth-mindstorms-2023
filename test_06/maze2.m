@@ -9,7 +9,7 @@ loop(b);
 
 %%Program
 function loop(brickObj)
-    StopValue = 15;
+    StopValue = 10;
 	drehUnFahr(brickObj)
 	while(true)
 		disp("Still alive")
@@ -37,10 +37,9 @@ end
 
 function brickObj = init()
     global SPEED;
-
 	brickObj = EV3();
-	%brickObj.connect('usb');
-	brickObj.connect('bt', 'serPort', '/dev/rfcomm0')
+	brickObj.connect('usb');
+	%brickObj.connect('bt', 'serPort', '/dev/rfcomm0')
 
 	brickObj.motorA.limitMode = 'Tacho';
 	brickObj.motorB.limitMode = 'Tacho';
@@ -111,35 +110,8 @@ function w =  umgebungsMessung(brickObj)
 	end
 
 	disp('Turn back and continue')
-    
-    figure
-	polarplot(WINKEL, ABSTAND);
-	%hold on
-%    maxAbstand = -1;
 
-%    TOLERANZ = 1
-%    for i = 1:N
-%        if(maxAbstand < ABSTAND(i))
-%            maxAbstand = ABSTAND(i);
-%            idx = i;
-%            idx2 = -1;
-%        elseif(abs(maxAbstand - ABSTAND(i)) <= TOLERANZ)
-%            idx2 = i;
-%        end
-%    end
-%
-%	w1 = WINKEL(idx) / pi * 180
-%
-%	if(idx2 > 0)
-%		w2 = WINKEL(idx2) / pi * 180
-%		w = floor((w1 + w2) / 2)
-%	else
-%		w = w1
-%    end
-%    
-%    maxAbstand = maxAbstand
-%    
-%    disp("Umgebungs Messung Fertig");
+	polarplot(WINKEL, ABSTAND);
 
 	brickObj.motorC.power = 100;
 
@@ -153,33 +125,31 @@ function w =  umgebungsMessung(brickObj)
 
 	% AUSWERTUNG
 
-	w = findDirection(ABSTAND, WINKEL)
+    maxAbstand = -1;
+    TOLERANZ = 1
+    for i = 1:N
+        if(maxAbstand < ABSTAND(i))
+            maxAbstand = ABSTAND(i);
+            idx = i;
+            idx2 = -1;
+        elseif(abs(maxAbstand - ABSTAND(i)) <= TOLERANZ)
+            idx2 = i;
+        end
+    end
+
+	w1 = WINKEL(idx) / pi * 180
+
+	if(idx2 > 0)
+		w2 = WINKEL(idx2) / pi * 180
+		w = floor((w1 + w2) / 2)
+	else
+		w = w1
+    end
+    
+    maxAbstand = maxAbstand
+    
+    disp("Umgebungs Messung Fertig");
 end
-
-function res = findDirection(ABSTAND, WINKEL)
-	[x,y] = pol2cart(WINKEL, ABSTAND)
-
-	cpx = complex(x,y)
-
-	ncpx = []
-	for n=1:360
-		%if(abs(abs(angle(n)) - 0.35) < 0.1)
-		ang = abs(angle(cpx(n)))
-        
-		if(0.35 < ang && 5.95 > ang)	
-			ncpx = [ncpx, cpx(n)]
-		end
-	end
-
-	summe = sum(ncpx, "all")
-
-	res = angle(summe) / pi * 180
-	if (res < 0)
-		res = res + 360 
-	end
-			
-end
-
 
 function drehung(brickObj, angle)
     global SPEED;
@@ -208,4 +178,3 @@ function drehung(brickObj, angle)
 	disp("Hab gedreht")
 end
             
-
