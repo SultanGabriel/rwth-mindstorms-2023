@@ -37,9 +37,10 @@ end
 
 function brickObj = init()
     global SPEED;
+
 	brickObj = EV3();
-	brickObj.connect('usb');
-	%brickObj.connect('bt', 'serPort', '/dev/rfcomm0')
+	%brickObj.connect('usb');
+	brickObj.connect('bt', 'serPort', '/dev/rfcomm0')
 
 	brickObj.motorA.limitMode = 'Tacho';
 	brickObj.motorB.limitMode = 'Tacho';
@@ -153,18 +154,17 @@ function w =  umgebungsMessung(brickObj)
 end
 
 function res = findDirection(ABSTAND, WINKEL)
-%	for i=1:360
-%		l = ABSTAND(i)
-%		w = WINKEL(i)
 	[x,y] = pol2cart(WINKEL, ABSTAND)
 
 	cpx = complex(x,y)
 
 	summe = sum(cpx, "all")
 
-	res = angle(summe)
+	res = angle(summe) / pi * 180
+	if (res < 0)
+		res = res + 360 
+	end
 			
-%	end
 end
 
 
