@@ -84,14 +84,15 @@ function w =  umgebungsMessung(brickObj)
 
     brickObj.motorC.start();
     while 1
-        abstand = brickObj.sensor1.value;
-
+        
         ABSTAND = circshift(ABSTAND, 1);
         WINKEL = circshift(WINKEL, 1);
 
-        ABSTAND(1) = abstand;
-
+        
+        abstand = brickObj.sensor1.value;
         c = double(abs(brickObj.motorC.tachoCount));
+        
+        ABSTAND(1) = abstand;
         WINKEL(1) = c * 3.14 / 180.0;
 
 

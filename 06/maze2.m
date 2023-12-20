@@ -1,51 +1,62 @@
-brickObj = EV3();
-%brickObj.connect('usb');
-brickObj.connect('bt', 'serPort', '/dev/rfcomm0')
+global SPEED;
+SPEED = 11;
 
-brickObj.motorA.limitMode = 'Tacho';
-brickObj.motorB.limitMode = 'Tacho';
-brickObj.motorC.limitMode = 'Tacho';
+StopValue = 10;
 
-brickObj.motorA.resetTachoCount;
-brickObj.motorB.resetTachoCount;
-brickObj.motorC.resetTachoCount;
-
-brickObj.motorA.brakeMode = 'Brake';
-brickObj.motorB.brakeMode = 'Brake';
-brickObj.motorC.brakeMode = 'Brake';
-
-brickObj.motorA.speedRegulation = 0;
-brickObj.motorB.speedRegulation = 0;
-brickObj.motorC.speedRegulation = 1;
-
-SPEED = 1;
-
-brickObj.motorA.power = SPEED;
-brickObj.motorB.power = SPEED;
-brickObj.motorC.power = 5;
-
-StopValue = 8.0;
-
+b = init()
+disp('did init');
+loop(b);
 %%Program
-drehUnFahr(brickObj)
-while(true)
-	disp("Still alive")
-	if(brickObj.sensor1.value <= StopValue)
-		brickObj.motorA.syncedStop();
-        disp("Stopped, dist < stopvalue");
-		drehUnFahr(brickObj);
-    end
-    
-    if(~brickObj.motorC.isRunning)
-       brickObj.motorC.stop(); 
-    end
-        
-	% EMERGENCY STOP !!!
-	if(brickObj.sensor2.value)
-		disp("EMERGENCY STOP!!!");
-		brickObj.disconnect();
-		break;
+function loop(brickObj)
+	drehUnFahr(brickObj)
+	while(true)
+		disp("Still alive")
+		if(brickObj.sensor1.value <= StopValue)
+			brickObj.motorA.syncedStop();
+			disp("Stopped, dist < stopvalue");
+			drehUnFahr(brickObj);
+		end
+		
+		if(~brickObj.motorC.isRunning)
+		   brickObj.motorC.stop(); 
+		end
+			
+		% EMERGENCY STOP !!!
+		if(brickObj.sensor2.value)
+			disp("EMERGENCY STOP!!!");
+			brickObj.disconnect();
+			break;
+		end
 	end
+end
+
+
+%% Connect & Init 
+
+function brickObj = init()
+	brickObj = EV3();
+	%brickObj.connect('usb');
+	brickObj.connect('bt', 'serPort', '/dev/rfcomm0')
+
+	brickObj.motorA.limitMode = 'Tacho';
+	brickObj.motorB.limitMode = 'Tacho';
+	brickObj.motorC.limitMode = 'Tacho';
+
+	brickObj.motorA.resetTachoCount;
+	brickObj.motorB.resetTachoCount;
+	brickObj.motorC.resetTachoCount;
+
+	brickObj.motorA.brakeMode = 'Brake';
+	brickObj.motorB.brakeMode = 'Brake';
+	brickObj.motorC.brakeMode = 'Brake';
+
+	brickObj.motorA.speedRegulation = 0;
+	brickObj.motorB.speedRegulation = 0;
+	brickObj.motorC.speedRegulation = 1;
+
+	brickObj.motorA.power = SPEED;
+	brickObj.motorB.power = SPEED;
+	brickObj.motorC.power = 5;
 end
 
 
@@ -82,40 +93,34 @@ function w =  umgebungsMessung(brickObj)
     idx2 = -1;
 
     brickObj.motorC.start();
-    while 1
-        abstand = brickObj.sensor1.value;
 
+	while (brickObj.motorC.isRunning)
         ABSTAND = circshift(ABSTAND, 1);
         WINKEL = circshift(WINKEL, 1);
 
-        ABSTAND(1) = abstand;
-
-        c = double(abs(brickObj.motorC.tachoCount));
-        WINKEL(1) = c * 3.14 / 180.0;
-
-
-        %if(360 - abs(brickObj.motorC.tachoCount) < 3  )
-        if(~brickObj.motorC.isRunning)
-            disp('Turn back and continue')
-
-            polarplot(WINKEL, ABSTAND);
-
-            brickObj.motorC.power = -100;
-
-            brickObj.motorC.resetTachoCount;
-
-            brickObj.motorC.start();
-
-            brickObj.motorC.resetTachoCount;
-
-            brickObj.motorC.power = 5;
-            
-            break;
-        end
         
+        abstand = brickObj.sensor1.value;
+        c = double(abs(brickObj.motorC.tachoCount));
+        
+        ABSTAND(1) = abstand;
+        WINKEL(1) = c * 3.14 / 180.0;
+	end
 
-    end
+	disp('Turn back and continue')
 
+	polarplot(WINKEL, ABSTAND);
+
+	brickObj.motorC.power = -100;
+
+	brickObj.motorC.resetTachoCount;
+
+	brickObj.motorC.start();
+
+	brickObj.motorC.resetTachoCount;
+
+	brickObj.motorC.power = 5;
+
+	% AUSWERTUNG
 
     maxAbstand = -1;
     TOLERANZ = 1
