@@ -158,7 +158,15 @@ function res = findDirection(ABSTAND, WINKEL)
 
 	cpx = complex(x,y)
 
-	summe = sum(cpx, "all")
+	ncpx = []
+	for n = cpx
+		if(abs(abs(angle(n)) - 0.35) < 0.1)
+			ncpx = [ncpx, n]
+	
+		end
+	end
+
+	summe = sum(ncpx, "all")
 
 	res = angle(summe) / pi * 180
 	if (res < 0)
