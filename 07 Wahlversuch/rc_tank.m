@@ -8,22 +8,6 @@ SPEED = 50;
 
 
 init();
-%% Main Loop
-%while(true)
-%	%Emergency stop	
-%	if(brick.sensor2.value)
-%		brick.disconnect()
-%
-%		global t;
-%		t.stop()
-%		t.delete()
-%		break
-%	end
-%
-%%	global distPlot;
-%%	distPlot.YData = brick.sensor4.value;
-		
-%end
 
 function brickObj = init()
     global SPEED
@@ -31,7 +15,7 @@ function brickObj = init()
 	global fig;
 
     brick = EV3();
-    brick.connect('usb');
+   	brick.connect('usb');
     %brick.connect('bt', 'serPort', '/dev/rfcomm0')
 
     brick.motorA.limitMode = 'Tacho';
@@ -60,6 +44,7 @@ function brickObj = init()
 	v = brick.sensor4.value;
 	distPlot = bar(v, 'r')
 	ylim([0 255])
+    
 
 	global beepTimer;
 	beepTimer = timer()
@@ -108,19 +93,6 @@ end
 function turn(dir)
     global SPEED;
     global brick;
-	% % right turn
-    % %{if (dir > 0)
-	% 	brick.motorA.power = -SPEED;
-	% 	brick.motorD.power = SPEED;
-	% 	%brick.motorA.limitValue = grad;
-	% 	%brick.motorD.limitValue = grad;
-	% elseif(dir < 0)
-	% 	brick.motorA.power = SPEED;
-	% 	brick.motorD.power = -SPEED;
-	% 	%brick.motorA.limitValue = abs(grad);
-	% 	%brick.motorD.limitValue = abs(grad);
-	% end
-	% %}
 
 	brick.motorA.power = -SPEED * dir;
 	brick.motorD.power = SPEED * dir;
@@ -151,14 +123,36 @@ function disconnect()
 	close(fig)
 end
 
-function shoot()
-	disp("shoot")
+function moveArm(dir)
+	global brick;
+
+	ArmSPEED = 50;
+	
+	brick.motorB.power = dir * ArmSPEED;
+	brick.motorB.start;
+
 end
 
-function stopShooting()
-	disp("stopShooting")
+function stopArm()
+	global brick;
+
+	brick.motorB.stop;
 end
 
+function moveArmClamp(dir)
+	global brick;
+
+	ArmSPEED = 20;
+
+	brick.motorC.power = dir * ArmSPEED;
+	brick.motorC.start;
+end
+
+function stopArmClamp()
+	global brick;
+	brick.motorC.stop;
+end
+	
 %% Keyboard keyPressed
 function keyPressed(src, event)
 	global KeyIsPressed;
@@ -177,8 +171,14 @@ function keyPressed(src, event)
 				turn(1)
 			case 'p'
 				disconnect();
-			case 'space'
-				shoot();
+			case 'r'
+				moveArm(1)
+			case 'f'
+				moveArm(-1)
+			case 't'
+				moveArmClamp(1)
+			case 'g'
+				moveArmClamp(-1)
 		end
 	end
 
@@ -195,21 +195,22 @@ function keyReleased(src, event)
 		KeyIsPressed = 0;
 		switch event.Key
 			case 'w'
-				%brick.motorA.syncedStop();
 				stopMotors();
 			case 's'
-				%brick.motorA.syncedStop();
 				beepTimer.stop;
 				stopMotors();
 			case 'a'
 				stopMotors();
 			case 'd'
 				stopMotors();
-			case 'space'
-				stopShooting();
+			case 'r'
+				stopArm();
+			case 'f'
+				stopArm()
+			case 't'
+				stopArmClamp();
+			case 'g'
+				stopArmClamp();
 		end
 	end
 end
-
-
-
